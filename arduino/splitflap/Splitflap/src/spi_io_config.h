@@ -19,41 +19,6 @@
 
 #include <SPI.h>
 
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
-  #define OUT_LATCH_PIN (4)
-  #define _OUT_LATCH_PORT PORTD
-  #define _OUT_LATCH_BIT 4
-
-  #define IN_LATCH_PIN (5)
-  #define _IN_LATCH_PORT PORTD
-  #define _IN_LATCH_BIT 5
-
-  #define OUT_LATCH(){\
-    _OUT_LATCH_PORT |= (1 << _OUT_LATCH_BIT);\
-    _OUT_LATCH_PORT &= ~(1 << _OUT_LATCH_BIT);\
-  }
-  #define IN_LATCH() {\
-    _IN_LATCH_PORT &= ~(1 << _IN_LATCH_BIT);\
-    _IN_LATCH_PORT |= (1 << _IN_LATCH_BIT);\
-  }
-
-  #define SPI_CLOCK 3000000
-
-  #define BUFFER_ATTRS
-#endif
-
-#ifdef ARDUINO_ESP8266_WEMOS_D1MINI
-  #define OUT_LATCH_PIN (D1)
-  #define IN_LATCH_PIN (D2)
-
-  #define OUT_LATCH() {digitalWrite(OUT_LATCH_PIN, HIGH); digitalWrite(OUT_LATCH_PIN, LOW);}
-  #define IN_LATCH() {digitalWrite(IN_LATCH_PIN, LOW); digitalWrite(IN_LATCH_PIN, HIGH);}
-
-  #define SPI_CLOCK 3000000
-
-  #define BUFFER_ATTRS
-#endif
-
 #ifdef ESP32
   #include "driver/spi_master.h"
   #include "driver/spi_slave.h"
@@ -75,7 +40,7 @@
   #define BUFFER_ATTRS WORD_ALIGNED_ATTR
 
   // Note: must use HSPI to avoid conflict with ST7789 driver which uses VSPI
-  #define SPI_HOST HSPI_HOST
+  #define SPI_HOST SPI2_HOST
   #define DMA_CHANNEL 1
 
 
@@ -103,14 +68,6 @@
 
 BUFFER_ATTRS uint8_t motor_buffer[MOTOR_BUFFER_LENGTH];
 BUFFER_ATTRS uint8_t sensor_buffer[SENSOR_BUFFER_LENGTH];
-
-#ifdef __AVR__
-// Define placement new so we can initialize SplitflapModules at runtime into a static buffer.
-// (see https://arduino.stackexchange.com/a/1499)
-void* operator new(__attribute__((unused)) size_t size, void* ptr) {
-  return ptr;
-}
-#endif
 
 #ifdef ESP32
 void reset_latch(spi_transaction_t *trans) {

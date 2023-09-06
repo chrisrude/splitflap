@@ -58,11 +58,11 @@
 #include "src/Adafruit_INA219.h"
 #endif
 
-#ifdef __AVR__
-#define FAVR(x) F(x)
-#else
+// #ifdef __AVR__
+// #define FAVR(x) F(x)
+// #else
 #define FAVR(x) x
-#endif
+// #endif
 
 int recv_buffer[NUM_MODULES];
 
