@@ -15,13 +15,12 @@
 */
 #include "serial_task.h"
 
-#include "../core/uart_stream.h"
-
-SerialTask::SerialTask(SplitflapTask& splitflap_task, const uint8_t task_core) :
+SerialTask::SerialTask(DisplayTask& display_task, SplitflapTask& splitflap_task, const uint8_t task_core) :
         Task("Serial", 16000, 1, task_core),
         Logger(),
+        display_task_(display_task),
         splitflap_task_(splitflap_task),
-        stream_(),
+        stream_(Serial),
         legacy_protocol_(splitflap_task_, stream_),
         proto_protocol_(splitflap_task_, stream_) {
     log_queue_ = xQueueCreate(10, sizeof(std::string *));
@@ -32,7 +31,10 @@ SerialTask::SerialTask(SplitflapTask& splitflap_task, const uint8_t task_core) :
 }
 
 void SerialTask::run() {
-    stream_.begin();
+    Serial.begin();
+
+    display_task_.setMessage(2, "SerialTask running");
+    this->log("SerialTask running");
 
     // Start in legacy protocol mode
     legacy_protocol_.init();
@@ -83,6 +85,8 @@ void SerialTask::run() {
 }
 
 void SerialTask::log(const char* msg) {
+    display_task_.setMessage(2, msg);
+
     // Allocate a string for the duration it's in the queue; it is free'd by the queue consumer
     std::string* msg_str = new std::string(msg);
 

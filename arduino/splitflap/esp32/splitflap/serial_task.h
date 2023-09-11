@@ -18,8 +18,8 @@
 #include "config.h"
 
 #include "../core/splitflap_task.h"
+#include "display_task.h"
 #include "../core/task.h"
-#include "../core/uart_stream.h"
 
 #include "serial_legacy_json_protocol.h"
 #include "serial_proto_protocol.h"
@@ -28,7 +28,7 @@ class SerialTask : public Task<SerialTask>, public Logger {
     friend class Task<SerialTask>; // Allow base Task to invoke protected run()
 
     public:
-        SerialTask(SplitflapTask& splitflap_task, const uint8_t task_core);
+        SerialTask(DisplayTask& display_task, SplitflapTask& splitflap_task, const uint8_t task_core);
         virtual ~SerialTask() {};
         
         void log(const char* msg) override;
@@ -39,8 +39,9 @@ class SerialTask : public Task<SerialTask>, public Logger {
         void run();
 
     private:
+        DisplayTask& display_task_;
         SplitflapTask& splitflap_task_;
-        UartStream stream_;
+        Stream& stream_;
 
         SerialLegacyJsonProtocol legacy_protocol_;
         SerialProtoProtocol proto_protocol_;

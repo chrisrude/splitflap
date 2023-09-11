@@ -19,19 +19,18 @@
 
 #include <SPI.h>
 
-#ifdef ESP32
   #include "driver/spi_master.h"
   #include "driver/spi_slave.h"
 
-  #define LATCH_PIN (25)
+  #define LATCH_PIN MISO // 13
 
   // Optional - uncomment if connecting the output enable pin of the 74HC595 shift registers
   // to the ESP32. You can otherwise hard-wire the output enable pins to always be enabled.
   // #define OUTPUT_ENABLE_PIN (27)
 
-  #define PIN_NUM_MISO 39
-  #define PIN_NUM_MOSI 32
-  #define PIN_NUM_CLK  33
+  #define PIN_NUM_MISO SS // 10
+  #define PIN_NUM_MOSI MOSI // 11
+  #define PIN_NUM_CLK  SCK // 12
 
   // Note: You may need to slow this down to 3MHz if you're using a classic driver board;
   // the MIC5842 only officially supports up to 3.3MHz
@@ -41,7 +40,7 @@
 
   // Note: must use HSPI to avoid conflict with ST7789 driver which uses VSPI
   #define SPI_HOST SPI2_HOST
-  #define DMA_CHANNEL 1
+  #define DMA_CHANNEL SPI_DMA_CH_AUTO
 
 
   spi_device_handle_t spi_tx;
@@ -49,13 +48,6 @@
 
   spi_transaction_t tx_transaction;
   spi_transaction_t rx_transaction;
-
-
-#endif
-
-#if !defined(__AVR_ATmega168__) && !defined(__AVR_ATmega328P__) && !defined(ARDUINO_ESP8266_WEMOS_D1MINI) && !defined(ESP32)
-#error "Unknown/unsupported board for SPI mode. ATmega328-based boards (Uno, Duemilanove, Diecimila), ESP8266 and ESP32 are currently supported"
-#endif
 
 #ifdef CHAINLINK
 #define MOTOR_BUFFER_LENGTH (NUM_MODULES * 2 / 3 + (NUM_MODULES % 3 != 0) * 2)

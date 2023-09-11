@@ -25,11 +25,13 @@
 #include "serial_task.h"
 
 SplitflapTask splitflapTask(1, LedMode::AUTO);
-SerialTask serialTask(splitflapTask, 0);
 
 #if ENABLE_DISPLAY
 DisplayTask displayTask(splitflapTask, 0);
 #endif
+
+SerialTask serialTask(displayTask, splitflapTask, 0);
+
 
 #ifdef CHAINLINK_BASE
 #include "../base/base_supervisor_task.h"
@@ -47,13 +49,18 @@ HTTPTask httpTask(splitflapTask, displayTask, serialTask, 0);
 #endif
 
 void setup() {
-  serialTask.begin();
+    Serial.begin();
+    delay(2000);
+    // Serial.println("hello world");
+    // delay(2000);
 
-  splitflapTask.begin();
+   splitflapTask.begin();
 
   #if ENABLE_DISPLAY
   displayTask.begin();
   #endif
+
+    serialTask.begin();
 
   #if MQTT
   mqttTask.begin();
@@ -73,5 +80,6 @@ void setup() {
 
 
 void loop() {
-  assert(false);
+    // This loop is intentionally empty. All tasks are run in the background.
+    assert(false);
 }
