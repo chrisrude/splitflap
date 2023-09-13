@@ -1,10 +1,21 @@
 {
     "cSpell.words": [
+        "aaaaabbb",
+        "abcdefghjkmnprstuvwxyz",
+        "alphanum",
+        "arduinoespressif",
+        "bbcccccd",
         "Bezek",
+        "ddddeeee",
         "LEDS",
+        "mdns",
         "MILLIAMPS",
         "NEOPIXEL",
+        "netif",
         "NRESET",
-        "splitflap"
+        "rssi",
+        "sntp",
+        "splitflap",
+        "ssid"
     ]
 }
