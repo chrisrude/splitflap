@@ -48,6 +48,11 @@ MQTTTask mqttTask(splitflapTask, serialTask, 0);
 HTTPTask httpTask(splitflapTask, displayTask, serialTask, 0);
 #endif
 
+#if HTTP_SERVER
+#include "http_server_task.h"
+HTTPServerTask httpServerTask(splitflapTask, displayTask, serialTask, 0);
+#endif
+
 void setup() {
     Serial.begin();
     delay(2000);
@@ -68,6 +73,10 @@ void setup() {
 
   #if HTTP
   httpTask.begin();
+  #endif
+
+  #if HTTP_SERVER
+  httpServerTask.begin();
   #endif
 
   #ifdef CHAINLINK_BASE
