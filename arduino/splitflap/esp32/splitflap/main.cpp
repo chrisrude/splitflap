@@ -53,6 +53,26 @@ HTTPTask httpTask(splitflapTask, displayTask, serialTask, 0);
 HTTPServerTask httpServerTask(splitflapTask, displayTask, serialTask, 0);
 #endif
 
+
+#include <EasyButton.h>
+
+#define RESET_BUTTON_PIN 43
+
+EasyButton reset_button(RESET_BUTTON_PIN);
+
+
+void handle_reset() {
+  serialTask.log("Resetting from button");
+  splitflapTask.resetAll();
+}
+
+
+void buttonISR()
+{
+  reset_button.read();
+}
+
+
 void setup() {
     Serial.begin();
     delay(2000);
@@ -82,6 +102,12 @@ void setup() {
   #ifdef CHAINLINK_BASE
   baseSupervisorTask.begin();
   #endif
+
+  reset_button.begin();
+  reset_button.onPressed(handle_reset);
+
+  reset_button.enableInterrupt(buttonISR);
+
 
   // Delete the default Arduino loopTask to free up Core 1
   vTaskDelete(NULL);

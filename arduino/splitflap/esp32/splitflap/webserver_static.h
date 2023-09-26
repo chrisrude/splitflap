@@ -58,12 +58,6 @@ auto index_html = R"FOO(
 <body>
     <div class="container">
         <div class="flap">
-            <div class="flap__letter">A</div>
-            <div class="flap__letter">B</div>
-            <div class="flap__letter">C</div>
-            <div class="flap__letter">D</div>
-            <div class="flap__letter">E</div>
-            <div class="flap__letter">F</div>
         </div>
     </div>
 
@@ -80,11 +74,22 @@ auto index_html = R"FOO(
 
     <!-- periodically get /text and update the flaps -->
     <script>
-        const flapLetters = document.querySelectorAll('.flap__letter');
         const updateFlaps = () => {
             fetch('/text')
                 .then(response => response.text())
                 .then(text => {
+                    var flapLetters = document.querySelectorAll('.flap__letter');
+                    // if text has more characters than flaps, add flaps
+                    if (text.length > flapLetters.length) {
+                        for (let i = flapLetters.length; i < text.length; i++) {
+                            const newFlap = document.createElement('div');
+                            newFlap.classList.add('flap__letter');
+                            newFlap.innerText = text[i];
+                            document.querySelector('.flap').appendChild(newFlap);
+                        }
+                        flapLetters = document.querySelectorAll('.flap__letter');
+                    }
+
                     for (let i = 0; i < flapLetters.length; i++) {
                         flapLetters[i].innerText = text[i];
                     }
