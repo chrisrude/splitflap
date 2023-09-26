@@ -9,6 +9,9 @@
 #include "display_task.h"
 #include "network.h"
 
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
 
 class HTTPServerTask : public Task<HTTPServerTask> {
     friend class Task<HTTPServerTask>; // Allow base Task to invoke protected run()
@@ -24,4 +27,5 @@ class HTTPServerTask : public Task<HTTPServerTask> {
         DisplayTask& display_task_;
         Logger& logger_;
         Network network_;
+        AsyncWebServer server_;
 };

@@ -9,7 +9,7 @@
 #include <esp_wifi.h>
 #include <sys/time.h>
 #include <WiFi.h>
-#include <WiFiMulti.h>
+#include <AsyncTCP.h>
 
 #include <ArduinoLog.h>
 
@@ -55,7 +55,7 @@ public:
 #define NTP_POLLING_INTERVAL_MS 10
 
     Network(Logger& logger)
-        : m_wifiMulti(), m_logger(logger)
+        : m_logger(logger)
     {
         m_fWifiConnected = false;
         m_strMacAddress[0] = '\0';
@@ -121,21 +121,52 @@ public:
             return false;
         }
 
-        result = m_wifiMulti.addAP(ssid, password);
-        if (!result)
-        {
-            ERROR("Network: failed to add wifi AP!");
-            return false;
-        }
+        WiFi.begin(ssid, password);
 
-        DEBUG("Network: SSID:");
+        DEBUG("Network: Attempting SSID:");
         DEBUG(ssid);
         DEBUG("Network: MAC address:");
         DEBUG(m_strMacAddress);
         DEBUG("Network: hostname:");
         DEBUG(m_strHostname);
 
-        return reconnect_wifi();
+        return _await_connection();
+    }
+
+    bool _await_connection()
+    {
+        wl_status_t status = (wl_status_t)WiFi.waitForConnectResult(WIFI_CONNECT_TIMEOUT_MS);
+        if (WL_CONNECTED == status)
+        {
+            m_fWifiConnected = true;
+            DEBUG("Network: connected to wifi AP");
+            DEBUG(get_ssid());
+
+            IF_DEBUG(WiFi.printDiag(Serial));
+            DEBUG("Network: IP address: ");
+            DEBUG(WiFi.localIP().toString().c_str());
+            return true;
+        }
+        
+        m_fWifiConnected = false;
+        ERROR("Network: failed to connect to wifi");
+
+        switch (status)
+        {
+        case WL_NO_SSID_AVAIL:
+            ERROR("Network: no SSID available");
+            break;
+
+        case WL_CONNECT_FAILED:
+            ERROR("Network: failed to connect to wifi");
+            break;
+
+        default:
+            ERROR("Network: unknown status when connecting to wifi");
+            break;
+        }
+
+        return false;
     }
 
     /// @brief  Reconnect to wifi if we're not already connected.
@@ -146,47 +177,10 @@ public:
         {
             return true;
         }
-        DEBUG("Network: connecting to wifi...");
+        DEBUG("Network:reconnecting to wifi...");
 
-        // Setup wifi.  It's safe to do this multiple times
-        // (it will just return true if it's already in the
-        // requested mode)
-        bool result = WiFi.mode(WIFI_STA);
-        if (!result)
-        {
-            ERROR("Network: failed to set wifi mode!");
-            return false;
-        }
-
-        wl_status_t status = (wl_status_t)m_wifiMulti.run(WIFI_CONNECT_TIMEOUT_MS);
-        switch (status)
-        {
-        case WL_CONNECTED:
-            // fall through
-            break;
-
-        case WL_NO_SSID_AVAIL:
-            ERROR("Network: no SSID available");
-            return false;
-
-        case WL_CONNECT_FAILED:
-            ERROR("Network: failed to connect to wifi");
-            return false;
-
-        default:
-            ERROR("Network: unknown status when connecting to wifi");
-            return false;
-        }
-
-        m_fWifiConnected = true;
-        DEBUG("Network: connected to wifi AP");
-        DEBUG(get_ssid());
-
-        IF_DEBUG(WiFi.printDiag(Serial));
-        DEBUG("Network: IP address: ");
-        DEBUG(get_ip_address());
-
-        return true;
+        WiFi.reconnect();
+        return _await_connection();
     }
 
     bool is_wifi_connected() const
@@ -217,14 +211,7 @@ public:
         return m_strHostname;
     }
 
-    const char *get_ip_address() const
-    {
-        return WiFi.localIP().toString().c_str();
-    }
-
 protected:
-    WiFiMulti m_wifiMulti;
-
     Logger& m_logger;
 
     char m_strMacAddress[MAC_ADDRESS_FORMAT_LENGTH + 1];
