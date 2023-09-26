@@ -4,7 +4,7 @@
 #define PARAM_MESSAGE "message"
 
 #include "secrets.h"
-
+#include "webserver_static.h"
 
 HTTPServerTask::HTTPServerTask(
     SplitflapTask& splitflap_task,
@@ -65,29 +65,34 @@ void HTTPServerTask::run() {
 
 
     server_.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "text/plain", "Hello, world");
+        request->send(200, "text/html", index_html);
     });
 
     // Send a GET request to <IP>/get?message=<message>
-    server_.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    server_.on("/text", HTTP_GET, [] (AsyncWebServerRequest *request) {
         String message;
-        if (request->hasParam(PARAM_MESSAGE)) {
-            message = request->getParam(PARAM_MESSAGE)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
+        // todo: share some code with display_task
+        request->send(200, "text/plain", "THE_TEXT");
     });
 
     // Send a POST request to <IP>/post with a form field message set to <message>
-    server_.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
+    server_.on("/set", HTTP_POST, [this](AsyncWebServerRequest *request){
         String message;
-        if (request->hasParam(PARAM_MESSAGE, true)) {
-            message = request->getParam(PARAM_MESSAGE, true)->value();
-        } else {
-            message = "No message sent";
+        if (!request->hasParam(PARAM_MESSAGE, true)) {
+            request->send(400, "text/plain", "ERROR: No message sent");
+            return;
         }
-        request->send(200, "text/plain", "Hello, POST: " + message);
+        message = request->getParam(PARAM_MESSAGE, true)->value();
+        logger_.log("Setting text to: ");
+        logger_.log(message.c_str());
+        splitflap_task_.showString(message.c_str(), message.length());
+        request->send(200, "text/plain", "OK");
+    });
+
+    server_.on("/reset", HTTP_POST, [this](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "Resetting");
+        logger_.log("Resetting");
+        splitflap_task_.resetAll();
     });
 
     server_.onNotFound( [](AsyncWebServerRequest *request){
