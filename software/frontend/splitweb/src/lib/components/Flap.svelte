@@ -14,17 +14,18 @@
 and a white line through the middle.  Use a flex display -->
 <style>
     .flap {
-        --flap-width: calc(100% / var(--modules-per-row));
-        --split-height: 2px;
+        --flap-width: calc(100vw / var(--modules-per-row));
+        --flap-height: calc(var(--flap-width) * 86 / 54);
+        --split-height: 1px;
 
         display: flex;
         justify-content: center;
         align-items: center;
         width: var(--flap-width);
-        height: calc((var(--flap-width) * 86 / 54) + var(--split-height));
+        height: var(--flap-height);
         background-color: black;
         color: white;
-        font-size: 120px;
+        font-size: var(--flap-width);
         border-radius: 10px;
         border: 2px solid white;
         font-family: 'Roboto', sans-serif;
