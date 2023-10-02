@@ -1,12 +1,17 @@
 <script lang="ts">
     export let value: string;
+    export let pendingValue: string | undefined;
 </script>
 
 <div class="flap">
-    {#if value === ' '}
-        &nbsp;
+    {#if pendingValue !== undefined}
+        <div class="flapPendingValue">
+            {pendingValue}
+        </div>
     {:else}
-        {value}
+        <div class="flapActualValue">
+            {value}
+        </div>
     {/if}
 </div>
 
@@ -30,6 +35,7 @@ and a white line through the middle.  Use a flex display -->
         border: 2px solid white;
         font-family: 'Roboto', sans-serif;
         font-weight: 500;
+        text-transform: uppercase;
     }
 
     /* style the line through the middle of the flap */
@@ -39,5 +45,9 @@ and a white line through the middle.  Use a flex display -->
         width: 100%;
         height: var(--split-height);
         background-color: white;
+    }
+
+    .flapPendingValue {
+        color: green;
     }
 </style>

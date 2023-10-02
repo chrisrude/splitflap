@@ -4,23 +4,28 @@
 
     const NUM_ROWS = NUM_MODULES / MODULES_PER_ROW;
 
-    export let flapString: string;
-
-    let flapValues: string[];
-    const updateValues = () => {
-        // set flapValues from flapString.
-        // if flapString is longer than NUM_MODULES, truncate it.
-        // if flapString is shorter than NUM_MODULES, pad it with DEFAULT_FLAP_VALUE
-        // to make it NUM_MODULES long.
-        if (flapString.length > NUM_MODULES) {
-            flapValues = flapString.slice(0, NUM_MODULES).split('');
-        } else {
-            flapValues = flapString.padEnd(NUM_MODULES, DEFAULT_FLAP_VALUE).split('');
-        }
-        return flapValues.join('');
+    type FlapStatus = {
+        current: string;
+        pending?: string;
     };
 
-    $: undefined !== flapString && updateValues();
+    export let flapString: string;
+    export let flapStringPending: string | undefined;
+
+    let flapValues: FlapStatus[] = Array(NUM_MODULES).fill({ current: DEFAULT_FLAP_VALUE });
+
+    const updateValues = () => {
+        // loop through each FlapStatus in flapValues and set its current and pending values
+        // to the corresponding values in currentValues and pendingValues
+        flapValues = flapValues.map((_, i) => {
+            return {
+                current: flapString[i] ?? DEFAULT_FLAP_VALUE,
+                pending: flapStringPending?.[i] ?? undefined
+            };
+        });
+    };
+
+    $: (undefined !== flapString || undefined !== flapStringPending) && updateValues();
 </script>
 
 <div class="flapDisplay">
@@ -30,7 +35,7 @@
         {#each { length: NUM_ROWS } as _, i}
             <div class="flapRow">
                 {#each flapValues.slice(i * MODULES_PER_ROW, (i + 1) * MODULES_PER_ROW) as value, _}
-                    <Flap {value} />
+                    <Flap value={value.current} pendingValue={value.pending} />
                 {/each}
             </div>
         {/each}
