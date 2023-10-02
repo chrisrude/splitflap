@@ -7,15 +7,20 @@
     export let flapString: string;
 
     let flapValues: string[];
-    // set flapValues from flapString.
-    // if flapString is longer than NUM_MODULES, truncate it.
-    // if flapString is shorter than NUM_MODULES, pad it with DEFAULT_FLAP_VALUE
-    // to make it NUM_MODULES long.
-    if (flapString.length > NUM_MODULES) {
-        flapValues = flapString.slice(0, NUM_MODULES).split('');
-    } else {
-        flapValues = flapString.padEnd(NUM_MODULES, DEFAULT_FLAP_VALUE).split('');
-    }
+    const updateValues = () => {
+        // set flapValues from flapString.
+        // if flapString is longer than NUM_MODULES, truncate it.
+        // if flapString is shorter than NUM_MODULES, pad it with DEFAULT_FLAP_VALUE
+        // to make it NUM_MODULES long.
+        if (flapString.length > NUM_MODULES) {
+            flapValues = flapString.slice(0, NUM_MODULES).split('');
+        } else {
+            flapValues = flapString.padEnd(NUM_MODULES, DEFAULT_FLAP_VALUE).split('');
+        }
+        return flapValues.join('');
+    };
+
+    $: undefined !== flapString && updateValues();
 </script>
 
 <div class="flapDisplay">
@@ -24,7 +29,7 @@
              MODULES_PER_ROW in each flapRow-->
         {#each { length: NUM_ROWS } as _, i}
             <div class="flapRow">
-                {#each flapValues.slice(i * MODULES_PER_ROW, (i + 1) * MODULES_PER_ROW) as value, j}
+                {#each flapValues.slice(i * MODULES_PER_ROW, (i + 1) * MODULES_PER_ROW) as value, _}
                     <Flap {value} />
                 {/each}
             </div>
@@ -42,7 +47,6 @@ the whole width of the window -->
         align-items: center;
         width: 100%;
     }
-
     .flapRow {
         display: flex;
         justify-content: center;
