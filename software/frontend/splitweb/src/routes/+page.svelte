@@ -5,26 +5,38 @@
     let flapString: string = 'Hello World!';
     let flapStringPending: string = '';
 
-    // todo: periodically call /get and update flapString
+    let lastGetFailed: boolean = false;
+
+    // this will be called every second
+    const getFlapString = async () => {
+        const res = await fetch('/text');
+        if (res.ok) {
+            flapString = await res.text();
+            lastGetFailed = false;
+        } else {
+            if (!lastGetFailed) {
+                // do this to not spam the console
+                console.error('Failed to get flap string');
+                console.error(res);
+            }
+            lastGetFailed = true;
+        }
+    };
 
     const postFlapString = async () => {
+        const formData = new FormData();
+        formData.append('message', flapStringPending);
+
         const res = fetch('/set', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ flapStringPending })
+            body: formData
         });
         // when we get a response, log it to the console
         const result = await res;
         if (result.ok) {
-            // todo: get flapString from result
             flapString = flapStringPending;
             flapStringPending = '';
         } else {
-            // todo: handle error
-            flapString = flapStringPending;
-            flapStringPending = '';
             console.error(result);
         }
         return res;
@@ -52,6 +64,9 @@
 
     onMount(() => {
         ref.focus();
+
+        // call getFlapString every 1 second
+        setInterval(getFlapString, 1000);
     });
 </script>
 

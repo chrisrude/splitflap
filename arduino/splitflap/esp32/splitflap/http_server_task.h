@@ -11,6 +11,7 @@
 
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
 
 
 class HTTPServerTask : public Task<HTTPServerTask> {

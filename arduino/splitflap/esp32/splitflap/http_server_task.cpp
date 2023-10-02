@@ -4,7 +4,6 @@
 #define PARAM_MESSAGE "message"
 
 #include "secrets.h"
-#include "webserver_static.h"
 
 HTTPServerTask::HTTPServerTask(
     SplitflapTask& splitflap_task,
@@ -29,9 +28,16 @@ void HTTPServerTask::run() {
     }
 
 
-    server_.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, "text/html", index_html);
-    });
+    bool spiffs_ok = SPIFFS.begin();
+    if (!spiffs_ok) {
+        logger_.log("SPIFFS Mount Failed");
+        return;
+    }
+
+    server_.serveStatic("/", SPIFFS, "/web/").setDefaultFile("index.html");
+    // todo: precompress files, add gzip header
+    // AsyncStaticWebHandler* static_handler =  ....
+    // static_handler.addHeader("Content-Encoding", "gzip");
 
     // Send a GET request to <IP>/get?message=<message>
     server_.on("/text", HTTP_GET, [] (AsyncWebServerRequest *request) {
@@ -57,10 +63,36 @@ void HTTPServerTask::run() {
             message += String(NUM_MODULES - message.length(), ' ');
         }
 
-        // todo: sanitize input to only allow valid characters
+        // lower case all letters
+        message.toLowerCase();
+
+        // if any letter is not in flaps[], replace it with a space
+        for (int i = 0; i < message.length(); i++) {
+            bool found = false;
+            for (int j = 0; j < NUM_FLAPS; j++) {
+                if (message[i] == flaps[j]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                message[i] = ' ';
+            }
+        }
 
         logger_.log("Setting text to: ");
         logger_.log(message.c_str());
+
+        // there are two rows, figure out how many modules
+        // are in the first row
+        const int FIRST_ROW_MODULES = NUM_MODULES / 2;
+
+        // reverse all of the letters in the first row
+        for (int i = 0; i < FIRST_ROW_MODULES / 2; i++) {
+            char temp = message[i];
+            message[i] = message[FIRST_ROW_MODULES - i - 1];
+            message[FIRST_ROW_MODULES - i - 1] = temp;
+        }
 
         splitflap_task_.showString(message.c_str(), message.length());
         request->send(200, "text/plain", "OK");
