@@ -34,8 +34,12 @@
              MODULES_PER_ROW in each flapRow-->
         {#each { length: NUM_ROWS } as _, i}
             <div class="flapRow">
-                {#each flapValues.slice(i * MODULES_PER_ROW, (i + 1) * MODULES_PER_ROW) as value, _}
-                    <Flap value={value.current} pendingValue={value.pending} />
+                {#each flapValues.slice(i * MODULES_PER_ROW, (i + 1) * MODULES_PER_ROW) as value, j}
+                    <Flap
+                        value={value.current}
+                        pendingValue={value.pending}
+                        selected={i * MODULES_PER_ROW + j === flapStringPending?.length}
+                    />
                 {/each}
             </div>
         {/each}

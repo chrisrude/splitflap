@@ -1,6 +1,7 @@
 <script lang="ts">
     export let value: string;
     export let pendingValue: string | undefined;
+    export let selected: boolean = false;
 </script>
 
 <div class="flap">
@@ -9,7 +10,7 @@
             {pendingValue}
         </div>
     {:else}
-        <div class="flapActualValue">
+        <div class="flapActualValue" class:selected>
             {value}
         </div>
     {/if}
@@ -22,6 +23,7 @@ and a white line through the middle.  Use a flex display -->
         --flap-width: calc(100vw / var(--modules-per-row));
         --flap-height: calc(var(--flap-width) * 86 / 54);
         --split-height: 1px;
+        --select-color: rgb(180, 84, 29);
 
         display: flex;
         justify-content: center;
@@ -36,6 +38,7 @@ and a white line through the middle.  Use a flex display -->
         font-family: 'Roboto', sans-serif;
         font-weight: 500;
         text-transform: uppercase;
+        white-space: pre;
     }
 
     /* style the line through the middle of the flap */
@@ -48,6 +51,12 @@ and a white line through the middle.  Use a flex display -->
     }
 
     .flapPendingValue {
-        color: green;
+        color: var(--select-color);
+    }
+
+    .selected {
+        border-bottom: 1rem solid var(--select-color);
+        border-radius: 10px;
+        margin-bottom: -1rem;
     }
 </style>
