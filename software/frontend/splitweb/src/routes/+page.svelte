@@ -1,6 +1,6 @@
 <script lang="ts">
     import FlapDisplay from '$lib/components/FlapDisplay.svelte';
-    import { MODULES_PER_ROW, NUM_MODULES } from '$lib/constants';
+    import { FLAP_CHARACTERS, MODULES_PER_ROW, NUM_MODULES } from '$lib/constants';
     import { onMount } from 'svelte';
     let flapString: string = 'Hello World!';
     let flapStringPending: string = '';
@@ -42,6 +42,12 @@
             flapStringPending += spaces;
         }
     };
+
+    // fill entire display with a character
+    const fillAll = (char: string) => {
+        flapStringPending = char.repeat(NUM_MODULES);
+    };
+
     let ref: HTMLInputElement;
 
     onMount(() => {
@@ -61,6 +67,11 @@
             on:keydown={(e) => {
                 if ((e.key === 'Enter' && e.shiftKey === true) || e.key === 'Tab') {
                     addSpaces();
+                    e.preventDefault();
+                } else if (e.ctrlKey && e.key.length === 1) {
+                    fillAll(e.key);
+                } else if (e.key.length === 1 && !FLAP_CHARACTERS.includes(e.key.toLowerCase())) {
+                    // ignore keys that are not in FLAP_CHARACTERS
                     e.preventDefault();
                 }
             }}
