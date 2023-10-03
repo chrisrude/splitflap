@@ -29,7 +29,7 @@ public:
         count_missed_home(module_state.count_missed_home) {
     }
 
-    String state_string() const {
+    std::string state_string() const {
         switch (state) {
             case NORMAL:
                 return "normal";
@@ -48,7 +48,7 @@ public:
 
     Json to_json() const {
         return Json::object {
-            { "state", state_string() },
+            { "state", Json(state_string())},
             { "flap_index", flap_index },
             { "moving", moving },
             { "home_state", home_state },
@@ -162,7 +162,7 @@ void HTTPServerTask::run() {
     server_.on("/flaps", HTTP_GET, [this](AsyncWebServerRequest *request){
         String message;
         for (int i = 0; i < NUM_FLAPS; i++) {
-            message += flaps[i];
+            message += (char)flaps[i];
         }
         request->send(200, "text/plain", message);
     });

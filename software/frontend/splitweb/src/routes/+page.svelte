@@ -15,6 +15,7 @@
         const res = await fetch('/flaps');
         if (res.ok) {
             const flapValues = await res.text();
+            allowedFlapValues = flapValues.split('');
             console.log(flapValues);
         } else {
             console.error('Failed to get flap values');
