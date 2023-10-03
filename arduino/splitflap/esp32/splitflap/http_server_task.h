@@ -30,4 +30,5 @@ class HTTPServerTask : public Task<HTTPServerTask> {
         Logger& logger_;
         Network network_;
         AsyncWebServer server_;
+        String last_text_;
 };

@@ -18,6 +18,35 @@ HTTPServerTask::HTTPServerTask(
         server_(80) {
 }
 
+void sanitize_string(String& msg) {
+    // make sure message is exactly NUM_MODULES long, truncating
+    // it if it's too long, or padding it with spaces if it's too short
+    if (msg.length() > NUM_MODULES) {
+        msg = msg.substring(0, NUM_MODULES);
+    } else if (msg.length() < NUM_MODULES) {
+        for (int i = msg.length(); i < NUM_MODULES; i++) {
+            msg += " ";
+        }
+    }
+
+    // also, make it all lower-case
+    msg.toLowerCase();
+
+    // if any letter is not in flaps[], replace it with a space
+    for (int i = 0; i < msg.length(); i++) {
+        bool found = false;
+        for (int j = 0; j < NUM_FLAPS; j++) {
+            if (msg[i] == flaps[j]) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            msg[i] = ' ';
+        }
+    }
+}
+
 void HTTPServerTask::run() {
     logger_.log("Connecting to WiFi...");
     bool connected = network_.begin("splitflap", WIFI_SSID, WIFI_PASSWORD);
@@ -40,10 +69,9 @@ void HTTPServerTask::run() {
     // static_handler.addHeader("Content-Encoding", "gzip");
 
     // Send a GET request to <IP>/get?message=<message>
-    server_.on("/text_DDD", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
+    server_.on("/text", HTTP_GET, [this] (AsyncWebServerRequest *request) {
         // todo: share some code with display_task
-        request->send(200, "text/plain", "THE_TEXT");
+        request->send(200, "text/plain", last_text_);
     });
 
     // Send a POST request to <IP>/post with a form field message set to <message>
@@ -55,30 +83,7 @@ void HTTPServerTask::run() {
         }
         message = request->getParam(PARAM_MESSAGE, true)->value();
 
-        // make sure message is exactly NUM_MODULES long, truncating
-        // it if it's too long, or padding it with spaces if it's too short
-        if (message.length() > NUM_MODULES) {
-            message = message.substring(0, NUM_MODULES);
-        } else if (message.length() < NUM_MODULES) {
-            message += String(NUM_MODULES - message.length(), ' ');
-        }
-
-        // // lower case all letters
-        // message.toLowerCase();
-
-        // // if any letter is not in flaps[], replace it with a space
-        // for (int i = 0; i < message.length(); i++) {
-        //     bool found = false;
-        //     for (int j = 0; j < NUM_FLAPS; j++) {
-        //         if (message[i] == flaps[j]) {
-        //             found = true;
-        //             break;
-        //         }
-        //     }
-        //     if (!found) {
-        //         message[i] = ' ';
-        //     }
-        // }
+        sanitize_string(message);
 
         logger_.log("Setting text to: ");
         logger_.log(message.c_str());
@@ -94,11 +99,11 @@ void HTTPServerTask::run() {
             message[FIRST_ROW_MODULES - i - 1] = temp;
         }
 
-        logger_.log(message.c_str());
-        logger_.log("for realz");
-
         splitflap_task_.showString(message.c_str(), message.length());
-        request->send(200, "text/plain", "OK");
+
+        last_text_ = message;
+
+        request->send(200, "text/plain", message);
     });
 
     server_.on("/reset", HTTP_POST, [this](AsyncWebServerRequest *request){
