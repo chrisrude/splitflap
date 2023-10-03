@@ -3,6 +3,7 @@
     import { DEFAULT_FLAP_VALUE, MODULES_PER_ROW, NUM_MODULES } from '../constants';
     import Flap from './Flap.svelte';
 
+    // todo: dynamically adjust based on return values from /status
     const NUM_ROWS = NUM_MODULES / MODULES_PER_ROW;
 
     type FlapLetterStatus = {

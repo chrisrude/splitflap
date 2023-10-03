@@ -41,6 +41,6 @@ export const FLAP_CHARACTERS: string[] = [
     ',',
     "'"
 ];
-export const NUM_MODULES = 16;
-export const MODULES_PER_ROW = 8;
+export const NUM_MODULES = 24;
+export const MODULES_PER_ROW = 12;
 export const DEFAULT_FLAP_VALUE = FLAP_CHARACTERS[0];
