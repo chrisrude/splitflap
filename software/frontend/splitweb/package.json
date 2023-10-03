@@ -15,11 +15,11 @@
         "node": ">=18.18.0"
     },
     "scripts": {
-        "build": "vite build && node ./scripts/rename.js",
+        "build": "npm run clean && vite build && node ./scripts/rename.js",
         "rename": "node ./scripts/rename.js",
         "clean": "rm -rf ./build",
         "dev": "vite dev --host",
-        "preview": "npm run clean && npm run build && node ./scripts/server.js",
+        "preview": "npm run build && node ./scripts/server.js",
         "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
         "test": "npm run test:integration && npm run test:unit",

@@ -1,18 +1,20 @@
 <script lang="ts">
+    import type { FlapStatus } from '$lib/flap_status';
     import { DEFAULT_FLAP_VALUE, MODULES_PER_ROW, NUM_MODULES } from '../constants';
     import Flap from './Flap.svelte';
 
     const NUM_ROWS = NUM_MODULES / MODULES_PER_ROW;
 
-    type FlapStatus = {
+    type FlapLetterStatus = {
         current: string;
         pending?: string;
     };
 
     export let flapString: string;
     export let flapStringPending: string | undefined;
+    export let flapStatusValues: FlapStatus[];
 
-    let flapValues: FlapStatus[] = Array(NUM_MODULES).fill({ current: DEFAULT_FLAP_VALUE });
+    let flapValues: FlapLetterStatus[] = Array(NUM_MODULES).fill({ current: DEFAULT_FLAP_VALUE });
 
     const updateValues = () => {
         // loop through each FlapStatus in flapValues and set its current and pending values
@@ -38,6 +40,7 @@
                     <Flap
                         value={value.current}
                         pendingValue={value.pending}
+                        status={flapStatusValues[i * MODULES_PER_ROW + j]}
                         selected={i * MODULES_PER_ROW + j === flapStringPending?.length}
                     />
                 {/each}

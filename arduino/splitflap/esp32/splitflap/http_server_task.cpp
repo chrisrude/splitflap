@@ -3,7 +3,60 @@
 
 #define PARAM_MESSAGE "message"
 
+#include <json11.hpp>
+
 #include "secrets.h"
+
+#include "src/splitflap_module_data.h"
+
+using namespace json11;
+
+class FlapStatus {
+public:
+    State state;
+    uint8_t flap_index;
+    bool moving;
+    bool home_state;
+    uint8_t count_unexpected_home;
+    uint8_t count_missed_home;
+
+    FlapStatus(const SplitflapModuleState& module_state) :
+        state(module_state.state),
+        flap_index(module_state.flap_index),
+        moving(module_state.moving),
+        home_state(module_state.home_state),
+        count_unexpected_home(module_state.count_unexpected_home),
+        count_missed_home(module_state.count_missed_home) {
+    }
+
+    String state_string() const {
+        switch (state) {
+            case NORMAL:
+                return "normal";
+            case LOOK_FOR_HOME:
+                return "look_for_home";
+            case SENSOR_ERROR:
+                return "sensor_error";
+            case PANIC:
+                return "panic";
+            case STATE_DISABLED:
+                return "state_disabled";
+            default:
+                return "unknown";
+        }
+    }
+
+    Json to_json() const {
+        return Json::object {
+            { "state", state_string() },
+            { "flap_index", flap_index },
+            { "moving", moving },
+            { "home_state", home_state },
+            { "count_unexpected_home", count_unexpected_home },
+            { "count_missed_home", count_missed_home },
+        };
+    }
+};
 
 HTTPServerTask::HTTPServerTask(
     SplitflapTask& splitflap_task,
@@ -104,6 +157,26 @@ void HTTPServerTask::run() {
         last_text_ = message;
 
         request->send(200, "text/plain", message);
+    });
+
+    server_.on("/flaps", HTTP_GET, [this](AsyncWebServerRequest *request){
+        String message;
+        for (int i = 0; i < NUM_FLAPS; i++) {
+            message += flaps[i];
+        }
+        request->send(200, "text/plain", message);
+    });
+
+    server_.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request){
+        // send a JSON array of flap statuses
+        Json::array statuses;
+        SplitflapState state = splitflap_task_.getState();
+        for (int i = 0; i < NUM_MODULES; i++) {
+            statuses.push_back(FlapStatus(state.modules[i]).to_json());
+        }
+        std::string json_str = Json(statuses).dump();
+
+        request->send(200, "application/json", json_str.c_str());
     });
 
     server_.on("/reset", HTTP_POST, [this](AsyncWebServerRequest *request){
