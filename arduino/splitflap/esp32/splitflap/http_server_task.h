@@ -22,6 +22,7 @@ class HTTPServerTask : public Task<HTTPServerTask> {
 
     protected:
         void run();
+        void print_status();
 
     private:
         SplitflapTask& splitflap_task_;

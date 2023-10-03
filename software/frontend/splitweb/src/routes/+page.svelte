@@ -7,7 +7,6 @@
 
     let lastGetFailed: boolean = false;
 
-    // this will be called every second
     const getFlapString = async () => {
         const res = await fetch('/text');
         if (res.ok) {
@@ -64,9 +63,7 @@
 
     onMount(() => {
         ref.focus();
-
-        // call getFlapString every 1 second
-        setInterval(getFlapString, 1000);
+        getFlapString();
     });
 </script>
 
@@ -92,9 +89,10 @@
             }}
         />
     </label>
-
-    <button>Set</button>
 </form>
+
+<!-- button which will call getFlapString -->
+<button on:click={getFlapString}>Refresh</button>
 
 <svelte:window
     on:click={() => {

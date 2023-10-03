@@ -15,10 +15,11 @@
         "node": ">=18.18.0"
     },
     "scripts": {
-        "build": "vite build",
+        "build": "vite build && node ./scripts/rename.js",
+        "rename": "node ./scripts/rename.js",
         "clean": "rm -rf ./build",
         "dev": "vite dev --host",
-        "preview": "vite preview",
+        "preview": "npm run clean && npm run build && node ./scripts/server.js",
         "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
         "test": "npm run test:integration && npm run test:unit",
@@ -39,6 +40,7 @@
         "eslint": "^8.45.0",
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-svelte": "^2.32.4",
+        "express": "^4.18.2",
         "prettier": "^2.8.0",
         "prettier-plugin-svelte": "^2.10.1",
         "svelte": "^4.0.5",

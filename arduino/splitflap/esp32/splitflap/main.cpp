@@ -38,15 +38,15 @@ SerialTask serialTask(displayTask, splitflapTask, 0);
 BaseSupervisorTask baseSupervisorTask(splitflapTask, serialTask, 0);
 #endif
 
-#if MQTT
-#include "mqtt_task.h"
-MQTTTask mqttTask(splitflapTask, serialTask, 0);
-#endif
+// #if MQTT
+// #include "mqtt_task.h"
+// MQTTTask mqttTask(splitflapTask, serialTask, 0);
+// #endif
 
-#if HTTP
-#include "http_task.h"
-HTTPTask httpTask(splitflapTask, displayTask, serialTask, 0);
-#endif
+// #if HTTP
+// #include "http_task.h"
+// HTTPTask httpTask(splitflapTask, displayTask, serialTask, 0);
+// #endif
 
 #if HTTP_SERVER
 #include "http_server_task.h"

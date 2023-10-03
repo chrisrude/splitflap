@@ -10,7 +10,7 @@ HTTPServerTask::HTTPServerTask(
     DisplayTask& display_task,
     Logger& logger,
     const uint8_t task_core) :
-        Task("HTTP_Server", 16384, 1, task_core),
+        Task("HTTP_Server", 32768, 1, task_core),
         splitflap_task_(splitflap_task),
         display_task_(display_task),
         logger_(logger),
@@ -35,12 +35,12 @@ void HTTPServerTask::run() {
     }
 
     server_.serveStatic("/", SPIFFS, "/web/").setDefaultFile("index.html");
-    // todo: precompress files, add gzip header
+    // todo: pre-compress files, add gzip header
     // AsyncStaticWebHandler* static_handler =  ....
     // static_handler.addHeader("Content-Encoding", "gzip");
 
     // Send a GET request to <IP>/get?message=<message>
-    server_.on("/text", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    server_.on("/text_DDD", HTTP_GET, [] (AsyncWebServerRequest *request) {
         String message;
         // todo: share some code with display_task
         request->send(200, "text/plain", "THE_TEXT");
@@ -63,22 +63,22 @@ void HTTPServerTask::run() {
             message += String(NUM_MODULES - message.length(), ' ');
         }
 
-        // lower case all letters
-        message.toLowerCase();
+        // // lower case all letters
+        // message.toLowerCase();
 
-        // if any letter is not in flaps[], replace it with a space
-        for (int i = 0; i < message.length(); i++) {
-            bool found = false;
-            for (int j = 0; j < NUM_FLAPS; j++) {
-                if (message[i] == flaps[j]) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                message[i] = ' ';
-            }
-        }
+        // // if any letter is not in flaps[], replace it with a space
+        // for (int i = 0; i < message.length(); i++) {
+        //     bool found = false;
+        //     for (int j = 0; j < NUM_FLAPS; j++) {
+        //         if (message[i] == flaps[j]) {
+        //             found = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found) {
+        //         message[i] = ' ';
+        //     }
+        // }
 
         logger_.log("Setting text to: ");
         logger_.log(message.c_str());
@@ -93,6 +93,9 @@ void HTTPServerTask::run() {
             message[i] = message[FIRST_ROW_MODULES - i - 1];
             message[FIRST_ROW_MODULES - i - 1] = temp;
         }
+
+        logger_.log(message.c_str());
+        logger_.log("for realz");
 
         splitflap_task_.showString(message.c_str(), message.length());
         request->send(200, "text/plain", "OK");
@@ -110,30 +113,39 @@ void HTTPServerTask::run() {
 
     server_.begin();
 
-    String last_status;
+    print_status();
 
     while(1) {
 
-        String wifi_status;
-        wifi_status = "WiFi: ";
-        if (!network_.is_wifi_connected()) {
-            wifi_status += "Not connected";
-        } else {
-            wifi_status += "Connected to ";
-            wifi_status += network_.get_ssid();
-            wifi_status += " ";
-            wifi_status += WiFi.localIP().toString();
-        }
-        if (last_status != wifi_status) {
-            logger_.log(wifi_status.c_str());
-            last_status = wifi_status;
-        }
-
         if (!network_.is_wifi_connected()) {
             network_.reconnect_wifi();
+            print_status();
         }
-
-        delay(1000);
+        delay(10000);
     }
+}
+
+
+void HTTPServerTask::print_status() {
+    static boolean last_connected = false;
+
+    boolean connected = network_.is_wifi_connected();
+    if (connected == last_connected) {
+        return;
+    }
+
+    String wifi_status;
+    if (connected) {
+        wifi_status = "WiFi: connected to ";
+        wifi_status += network_.get_ssid();
+        wifi_status += " ";
+        wifi_status += WiFi.localIP().toString();
+    } else {
+        wifi_status = "WiFi: reconnecting to ";
+        wifi_status += network_.get_ssid();
+        wifi_status += "...";
+    }
+    logger_.log(wifi_status.c_str());
+    last_connected = connected;
 }
 #endif
