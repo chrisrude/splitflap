@@ -26,28 +26,37 @@ show all the values in a table
 -->
     <table>
         <tr>
-            <td>State</td>
+            <th>State</th>
             <td>{status.state}</td>
         </tr>
         <tr>
-            <td>Flap Index</td>
+            <th>Flap Index</th>
             <td>{status.flap_index}</td>
         </tr>
         <tr>
-            <td>Moving</td>
+            <th>Moving</th>
             <td>{status.moving ? 'Yes' : 'No'}</td>
         </tr>
         <tr>
-            <td>Home State</td>
+            <th>Home State</th>
             <td>{status.home_state ? 'Home' : 'Not Home'}</td>
         </tr>
         <tr>
-            <td>Unexpected Home</td>
+            <th>Unexpected<br />Home</th>
             <td>{status.count_unexpected_home}</td>
         </tr>
         <tr>
-            <td>Missed Home</td>
+            <th>Missed<br />Home</th>
             <td>{status.count_missed_home}</td>
         </tr>
     </table>
 </div>
+
+<style>
+    .flap_status {
+        text-transform: none;
+    }
+    .flap_status th {
+        text-align: right;
+    }
+</style>

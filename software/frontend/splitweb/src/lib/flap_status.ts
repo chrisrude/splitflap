@@ -27,3 +27,7 @@ export const createDefaultFlapStatus = (): FlapStatus => ({
 export const isFlapOk = (flap_status: FlapStatus): boolean => {
     return flap_status.state === 'normal' || flap_status.state === 'unknown';
 }
+
+export const isFlapWarning = (flap_status: FlapStatus): boolean => {
+    return flap_status.count_missed_home > 0 || flap_status.count_unexpected_home > 0;
+}

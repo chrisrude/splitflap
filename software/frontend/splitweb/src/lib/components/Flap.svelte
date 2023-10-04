@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { isFlapOk, type FlapStatus } from '$lib/flap_status';
+    import { isFlapOk, isFlapWarning, type FlapStatus } from '$lib/flap_status';
     import FlapStatusDisplay from './FlapStatusDisplay.svelte';
 
     export let value: string;
@@ -18,7 +18,7 @@
             {value}
         </div>
     {/if}
-    <div class="flap_status" class:error={!isFlapOk(status)}>
+    <div class="flap_status" class:error={!isFlapOk(status)} class:warning={isFlapWarning(status)}>
         <FlapStatusDisplay {status} />
     </div>
 </div>
@@ -66,10 +66,11 @@ and a white line through the middle.  Use a flex display -->
     .selected {
         border-bottom: var(--radius-size) solid var(--select-color);
         border-radius: var(--radius-size);
-        margin-bottom: -1rem;
+        margin-bottom: calc(-1 * var(--radius-size));
     }
 
     /* create a triangle in the upper right corner */
+    .flap_status.warning::before,
     .flap_status.error::before {
         content: '';
         position: absolute;
@@ -77,10 +78,15 @@ and a white line through the middle.  Use a flex display -->
         height: calc(var(--radius-size) / 2);
         top: 0;
         right: 0;
-        border-bottom: 0.5rem solid transparent;
-        border-left: 0.5rem solid transparent;
-        border-top: 0.5rem solid red;
-        border-right: 0.5rem solid red;
+        border-bottom: var(--radius-size) solid transparent;
+        border-left: var(--radius-size) solid transparent;
+        border-top: var(--radius-size) solid red;
+        border-right: var(--radius-size) solid red;
+    }
+
+    .flap_status.warning::before {
+        border-top: var(--radius-size) solid orange;
+        border-right: var(--radius-size) solid orange;
     }
 
     .flap_status {
@@ -88,9 +94,11 @@ and a white line through the middle.  Use a flex display -->
         top: 0;
         right: 0;
         font-size: 0.5rem;
-        padding: calc(var(--radius-size) / 2);
+        padding: calc(var(--radius-size) / 4);
         color: rgba(255, 255, 255, 0);
         border-radius: var(--radius-size);
+        width: calc(var(--flap-width) - 1rem);
+        padding-top: 1rem;
     }
 
     .flap_status.error,

@@ -20,6 +20,7 @@
         "rssi",
         "sntp",
         "splitflap",
-        "ssid"
+        "ssid",
+        "unreversed"
     ]
 }

@@ -7,7 +7,10 @@
     let flapStringPending: string = '';
 
     let lastGetFailed: boolean = false;
-    let flapStatusValues: FlapStatus[] = Array(NUM_MODULES).fill(createDefaultFlapStatus());
+    let flapStatusValues: FlapStatus[] = Array(NUM_MODULES);
+    for (let i = 0; i < NUM_MODULES; i++) {
+        flapStatusValues[i] = createDefaultFlapStatus();
+    }
     let allowedFlapValues = FLAP_CHARACTERS;
 
     const getFlapValues = async () => {
@@ -88,6 +91,10 @@
         flapStringPending = char.repeat(NUM_MODULES);
     };
 
+    flapStatusValues[flapStatusValues.length - 1].count_missed_home = 3;
+    flapStatusValues[flapStatusValues.length - 2].count_unexpected_home = 2;
+    flapStatusValues[flapStatusValues.length - 3].state = 'sensor_error';
+
     let ref: HTMLInputElement;
 
     onMount(() => {
@@ -123,8 +130,8 @@
 </form>
 
 <!-- button which will call getFlapString -->
-<button on:click={getFlapString}>Refresh</button>
-<button on:click={getStatus}>Refresh Status</button>
+<button on:click={getFlapString} class="button-89">Refresh</button>
+<button on:click={getStatus} class="button-89">Refresh Status</button>
 
 <svelte:window
     on:click={() => {
@@ -136,5 +143,39 @@
     .inputForm {
         width: 0;
         overflow: hidden;
+    }
+    .button-89 {
+        --b: 3px; /* border thickness */
+        --s: 0.45em; /* size of the corner */
+        --color: #373b44;
+
+        padding: calc(0.5em + var(--s)) calc(0.9em + var(--s));
+        color: var(--color);
+        --_p: var(--s);
+        background: conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0)
+            var(--_p) var(--_p) / calc(100% - var(--b) - 2 * var(--_p))
+            calc(100% - var(--b) - 2 * var(--_p));
+        transition: 0.3s linear, color 0s, background-color 0s;
+        outline: var(--b) solid #0000;
+        outline-offset: 0.6em;
+        font-size: 16px;
+
+        border: 0;
+
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+    }
+
+    .button-89:hover,
+    .button-89:focus-visible {
+        --_p: 0px;
+        outline-color: var(--color);
+        outline-offset: 0.05em;
+    }
+
+    .button-89:active {
+        background: var(--color);
+        color: #fff;
     }
 </style>

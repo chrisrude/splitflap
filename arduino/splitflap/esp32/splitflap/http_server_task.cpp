@@ -141,6 +141,8 @@ void HTTPServerTask::run() {
         logger_.log("Setting text to: ");
         logger_.log(message.c_str());
 
+        String unreversed_message = message;
+
         // there are two rows, figure out how many modules
         // are in the first row
         const int FIRST_ROW_MODULES = NUM_MODULES / 2;
@@ -154,9 +156,9 @@ void HTTPServerTask::run() {
 
         splitflap_task_.showString(message.c_str(), message.length());
 
-        last_text_ = message;
+        last_text_ = unreversed_message;
 
-        request->send(200, "text/plain", message);
+        request->send(200, "text/plain", unreversed_message);
     });
 
     server_.on("/flaps", HTTP_GET, [this](AsyncWebServerRequest *request){
