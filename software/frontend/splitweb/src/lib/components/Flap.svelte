@@ -8,15 +8,11 @@
     export let status: FlapStatus;
 </script>
 
-<div class="flap">
+<div class="flap" class:selected class:pendingValue={pendingValue !== undefined}>
     {#if pendingValue !== undefined}
-        <div class="flapPendingValue">
-            {pendingValue}
-        </div>
+        {pendingValue}
     {:else}
-        <div class="flapActualValue" class:selected>
-            {value}
-        </div>
+        {value}
     {/if}
     <div class="flap_status" class:error={!isFlapOk(status)} class:warning={isFlapWarning(status)}>
         <FlapStatusDisplay {status} />
@@ -32,6 +28,8 @@ and a white line through the middle.  Use a flex display -->
         --split-height: 1px;
         --select-color: rgb(180, 84, 29);
         --radius-size: calc(var(--flap-width) / 10);
+        --border-width: 2px;
+        --box-shadow-width: calc(var(--border-width) * 4);
 
         display: flex;
         justify-content: center;
@@ -42,11 +40,10 @@ and a white line through the middle.  Use a flex display -->
         color: white;
         font-size: var(--flap-width);
         border-radius: var(--radius-size);
-        border: 2px solid white;
+        border: var(--border-width) solid white;
         font-family: 'Roboto', sans-serif;
         font-weight: 500;
         text-transform: uppercase;
-        white-space: pre;
         position: relative;
     }
 
@@ -59,14 +56,30 @@ and a white line through the middle.  Use a flex display -->
         background-color: white;
     }
 
-    .flapPendingValue {
+    .flap.pendingValue:hover,
+    .flap:hover {
+        border: solid var(--border-width) var(--select-color);
+        box-shadow: inset 0px 0px var(--box-shadow-width) var(--box-shadow-width)
+            var(--select-color);
+    }
+
+    .flap.pendingValue {
         color: var(--select-color);
     }
 
-    .selected {
-        border-bottom: var(--radius-size) solid var(--select-color);
-        border-radius: var(--radius-size);
-        margin-bottom: calc(-1 * var(--radius-size));
+    .flap.selected::after {
+        position: absolute;
+        content: '_';
+        animation: cursor-blink 1s steps(1) infinite;
+    }
+
+    @keyframes cursor-blink {
+        0% {
+            color: var(--select-color);
+        }
+        50% {
+            color: black;
+        }
     }
 
     /* create a triangle in the upper right corner */
@@ -102,7 +115,7 @@ and a white line through the middle.  Use a flex display -->
     }
 
     .flap_status.error,
-    .flap_status:hover {
+    .flap_status.warning:hover {
         color: lightpink;
         background-color: rgba(0, 0, 0, 0.6);
     }
