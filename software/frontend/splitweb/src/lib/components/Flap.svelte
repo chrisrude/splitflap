@@ -56,12 +56,12 @@ and a white line through the middle.  Use a flex display -->
         background-color: white;
     }
 
-    .flap.pendingValue:hover,
+    /* .flap.pendingValue:hover,
     .flap:hover {
         border: solid var(--border-width) var(--select-color);
         box-shadow: inset 0px 0px var(--box-shadow-width) var(--box-shadow-width)
             var(--select-color);
-    }
+    } */
 
     .flap.pendingValue {
         color: var(--select-color);
