@@ -1,77 +1,19 @@
 <script lang="ts">
+    import { dev } from '$app/environment';
     import FlapDisplay from '$lib/components/FlapDisplay.svelte';
     import { FLAP_CHARACTERS, MODULES_PER_ROW, NUM_MODULES } from '$lib/constants';
     import { createDefaultFlapStatus, type FlapStatus } from '$lib/flap_status';
+    import { getFlaps, getStatus, getText, setText } from '$lib/split_api';
     import { onMount } from 'svelte';
-    let flapString: string = 'Hello World!';
+
+    let flapString: string = 'loading...';
     let flapStringPending: string = '';
 
-    let lastGetFailed: boolean = false;
     let flapStatusValues: FlapStatus[] = Array(NUM_MODULES);
     for (let i = 0; i < NUM_MODULES; i++) {
         flapStatusValues[i] = createDefaultFlapStatus();
     }
     let allowedFlapValues = FLAP_CHARACTERS;
-
-    const getFlapValues = async () => {
-        // call /flaps
-        const res = await fetch('/flaps');
-        if (res.ok) {
-            const flapValues = await res.text();
-            allowedFlapValues = flapValues.split('');
-            console.log(flapValues);
-        } else {
-            console.error('Failed to get flap values');
-            console.error(res);
-        }
-    };
-
-    const getFlapString = async () => {
-        const res = await fetch('/text');
-        if (res.ok) {
-            flapString = await res.text();
-            lastGetFailed = false;
-        } else {
-            if (!lastGetFailed) {
-                // do this to not spam the console
-                console.error('Failed to get flap string');
-                console.error(res);
-            }
-            lastGetFailed = true;
-        }
-    };
-
-    const getStatus = async () => {
-        const res = await fetch('/status');
-        if (res.ok) {
-            const status = await res.json();
-            console.log(status);
-            flapStatusValues = status;
-        } else {
-            console.error('Failed to get flap status');
-            console.error(res);
-        }
-    };
-
-    const postFlapString = async () => {
-        const formData = new FormData();
-        formData.append('message', flapStringPending);
-
-        const res = fetch('/set', {
-            method: 'POST',
-            body: formData
-        });
-        // when we get a response, log it to the console
-        const result = await res;
-        if (result.ok) {
-            const set_text = await result.text();
-            flapString = set_text;
-            flapStringPending = '';
-        } else {
-            console.error(result);
-        }
-        return res;
-    };
 
     const addSpaces = () => {
         // if we're not on the last row of input, add spaces to postFlapString
@@ -91,17 +33,41 @@
         flapStringPending = char.repeat(NUM_MODULES);
     };
 
-    flapStatusValues[flapStatusValues.length - 1].count_missed_home = 3;
-    flapStatusValues[flapStatusValues.length - 2].count_unexpected_home = 2;
-    flapStatusValues[flapStatusValues.length - 3].state = 'sensor_error';
+    const getFlapStatus = async () => {
+        getStatus().then((status) => {
+            flapStatusValues = status;
+        });
+    };
+
+    const getFlapString = async () => {
+        getText().then((text) => {
+            flapString = text;
+        });
+    };
+
+    const postFlapString = async () => {
+        setText(flapStringPending).then(() => {
+            flapString = flapStringPending;
+            flapStringPending = '';
+        });
+    };
+
+    // test data for FlapDisplay
+    if (dev) {
+        flapStatusValues[flapStatusValues.length - 1].count_missed_home = 3;
+        flapStatusValues[flapStatusValues.length - 2].count_unexpected_home = 2;
+        flapStatusValues[flapStatusValues.length - 3].state = 'sensor_error';
+    }
 
     let ref: HTMLInputElement;
 
     onMount(() => {
         ref.focus();
+        getFlaps().then((flaps) => {
+            allowedFlapValues = flaps;
+        });
         getFlapString();
-        getStatus();
-        getFlapValues();
+        getFlapStatus();
     });
 </script>
 
@@ -131,7 +97,7 @@
 
 <!-- button which will call getFlapString -->
 <button on:click={getFlapString} class="button-89">Refresh</button>
-<button on:click={getStatus} class="button-89">Refresh Status</button>
+<button on:click={getFlapStatus} class="button-89">Refresh Status</button>
 
 <svelte:window
     on:click={() => {
