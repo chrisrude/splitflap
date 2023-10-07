@@ -1,18 +1,14 @@
 <script lang="ts">
-    import { dev } from '$app/environment';
     import FlapDisplay from '$lib/components/FlapDisplay.svelte';
     import { FLAP_CHARACTERS, MODULES_PER_ROW, NUM_MODULES } from '$lib/constants';
-    import { createDefaultFlapStatus, type FlapStatus } from '$lib/flap_status';
+    import { getDefaultStatus, type FlapStatus } from '$lib/flap_status';
     import { getFlaps, getStatus, getText, setText } from '$lib/split_api';
     import { onMount } from 'svelte';
 
     let flapString: string = 'loading...';
     let flapStringPending: string = '';
 
-    let flapStatusValues: FlapStatus[] = Array(NUM_MODULES);
-    for (let i = 0; i < NUM_MODULES; i++) {
-        flapStatusValues[i] = createDefaultFlapStatus();
-    }
+    let flapStatusValues: FlapStatus[] = getDefaultStatus();
     let allowedFlapValues = FLAP_CHARACTERS;
 
     const addSpaces = () => {
@@ -52,12 +48,11 @@
         });
     };
 
-    // test data for FlapDisplay
-    if (dev) {
-        flapStatusValues[flapStatusValues.length - 1].count_missed_home = 3;
-        flapStatusValues[flapStatusValues.length - 2].count_unexpected_home = 2;
-        flapStatusValues[flapStatusValues.length - 3].state = 'sensor_error';
-    }
+    const doReset = async () => {
+        setText('reset').then(() => {
+            flapString = '';
+        });
+    };
 
     let ref: HTMLInputElement;
 
@@ -98,6 +93,7 @@
 <!-- button which will call getFlapString -->
 <button on:click={getFlapString} class="button-89">Refresh</button>
 <button on:click={getFlapStatus} class="button-89">Refresh Status</button>
+<button on:click={doReset} class="button-89">Reset</button>
 
 <svelte:window
     on:click={() => {

@@ -1,3 +1,5 @@
+import { NUM_MODULES } from "./constants";
+
 export type FlapState =
     | 'normal'
     | 'look_for_home'
@@ -30,4 +32,12 @@ export const isFlapOk = (flap_status: FlapStatus): boolean => {
 
 export const isFlapWarning = (flap_status: FlapStatus): boolean => {
     return flap_status.count_missed_home > 0 || flap_status.count_unexpected_home > 0;
+}
+
+export const getDefaultStatus = (): FlapStatus[] => {
+    const flapStatusValues: FlapStatus[] = Array(NUM_MODULES);
+    for (let i = 0; i < NUM_MODULES; i++) {
+        flapStatusValues[i] = createDefaultFlapStatus();
+    }
+    return flapStatusValues;
 }
